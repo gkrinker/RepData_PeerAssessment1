@@ -168,5 +168,4 @@ Finally, we plot the averages across weekend and weekday in the plot below.
 
 library(lattice)
 xyplot(averagesWithDayType$x~ averagesWithDayType$interval | averagesWithDayType$dayType, type="l", layout=c(1,2), xlab = "Interval", ylab = "Number of Steps")
-
 ```
