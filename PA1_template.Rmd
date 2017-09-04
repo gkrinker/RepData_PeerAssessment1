@@ -33,7 +33,7 @@ In order to make our analysis easier, we are going to convert the date variable 
 data$date <- as.factor(data$date)
 ```
 
-## What is mean total number of steps taken per day?
+## What is the mean total number of steps taken per day?
 
 Our first step in the analysis is to produce a histogram of the total number of steps across each day.
 
@@ -74,7 +74,6 @@ Now we plot a time series (type = 'l') of the average number of steps of each in
 ```{r time series over 5 minutes intervals}
 
 plot(AverageStepsByInterval[[1]], AverageStepsByInterval[[2]], type="l", ylab = "Average Number of Steps", xlab = "Interval", main = "Average Number of Steps for each Interval across days")
-
 ```
 
 And finally we look for the 5 minute interval that has the maxmimum average number of steps across days. In order to do that, we sort the dataframe containing the Average steps of intervals across days and return the interval in the first row.
@@ -82,11 +81,10 @@ And finally we look for the 5 minute interval that has the maxmimum average numb
 ```{r max average of interval across days}
 
 ##Sort by highest average across days
-AverageStepsByInterval <- AverageStepsByInterval[order(AverageStepsByInterval[[2]]),]
+SortedAverageStepsByInterval <- AverageStepsByInterval[order(AverageStepsByInterval[[2]]),]
 
 ##return interval in first row of sorted data frame
-AverageStepsByInterval[1,1]
-
+SortedAverageStepsByInterval[1,1]
 ```
 
 The interval with maximum average number of steps across days is interval `r AverageStepsByInterval[1,1]`.
@@ -95,4 +93,49 @@ The interval with maximum average number of steps across days is interval `r Ave
 
 There is a total of `r sum(apply(data, 1, function(x) sum(is.na(x))))` NAs in the dataset.
 
+We are going to fill in all the missing values (NAs) of the original dataset by substituting each missing value with the average for that interval across days.
+
+```{r replace NAs}
+
+## We'll go through each row of the table and if NA, replace it with the average for that interval across days
+
+dataWithNoNa <- data;
+
+for (i in 1:nrow(dataWithNoNa)){
+        if(is.na(dataWithNoNa[i,1])){
+                dataWithNoNa[i,1] <- AverageStepsByInterval[which(AverageStepsByInterval[[1]] == dataWithNoNa[i,3]),2]
+        }
+}
+
+```
+We produce a histogram with our new data set with the NAs replaced - 
+
+```{r histogram no NA}
+
+newStepsPerDay <- aggregate(dataWithNoNa$steps, by = list(Date = dataWithNoNa$date), FUN = sum)
+
+names(newStepsPerDay)[2] <- "TotalSteps"
+
+hist(newStepsPerDay$TotalSteps, main = "Histogram of Total Number of Steps per day after replacing NAs", xlab = "Number of Steps per Day", ylab = "Frequency", ylim = c(0,35))
+
+```
+
+And re-calculate the mean and median of the new data set - 
+
+```{r mean steps per day without NAs}
+
+mean(newStepsPerDay$TotalSteps)
+
+```
+
+```{r median steps per day without NAs}
+
+median(newStepsPerDay$TotalSteps)
+
+```
+
+After replacing the data points that were missing with the average across days for the intervals, we see from the histogram that many intervals that had a low number of steps now have closer to the average number of steps. That is further reinforced by the fact that the median and mean are now the same, a difference from the original data set that had the mean be lower than the median. The new data set is more centered around the median and less heavy on intervals with low number of steps.
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
