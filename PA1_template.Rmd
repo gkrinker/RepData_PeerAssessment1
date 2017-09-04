@@ -138,4 +138,12 @@ After replacing the data points that were missing with the average across days f
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+In order to compare weekdays and weekends, we first need to create a new factor variable determing whether the date is a weekday or weekend.
+
+```{r weekday and weekend determination}
+
+dataWithNoNa$dayType <- ifelse (weekdays(as.Date(dataWithNoNa$date)) == "Saturday" | weekdays(as.Date(dataWithNoNa$date)) == "Sunday" ,"Weekend", "Weekday")
+
+cat(dataWithNoNa$dayType)
+```
 
