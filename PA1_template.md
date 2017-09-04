@@ -1,14 +1,7 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-author: "Georges Krinker"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
+Georges Krinker  
 
-```{r setoptions, echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.align="center")
-```
+
 
 This document describes the loading, pre-processing and analysis of data from a personal activity monitoring device. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
 
@@ -27,13 +20,15 @@ In this document we will perform the following analysis -
 
 We are first going to load the data as a data frame.
 
-```{r loading data}
+
+```r
 data <- read.csv("activity.csv")
 ```
 
 In order to make our analysis easier, we are going to convert the date variable into a factor.
 
-```{r make date factor}
+
+```r
 data$date <- as.factor(data$date)
 ```
 
@@ -41,7 +36,8 @@ data$date <- as.factor(data$date)
 
 Our first step in the analysis is to produce a histogram of the total number of steps across each day.
 
-```{r histogram}
+
+```r
 stepsPerday <- aggregate(data$steps, by = list(Date = data$date), FUN = sum, na.rm = TRUE)
 
 names(stepsPerday)[2] <- "TotalSteps"
@@ -49,41 +45,50 @@ names(stepsPerday)[2] <- "TotalSteps"
 hist(stepsPerday$TotalSteps, main = "Histogram of Total Number of Steps per day", xlab = "Number of Steps per Day", ylab = "Frequency", ylim = c(0,35))
 ```
 
+<img src="PA1_template_files/figure-html/histogram-1.png" style="display: block; margin: auto;" />
+
 Now, we calculate the mean and median steps taken per day.
 
-```{r mean steps per day}
 
+```r
 mean(stepsPerday$TotalSteps)
-
 ```
 
-```{r median steps per day}
+```
+## [1] 9354.23
+```
 
+
+```r
 median(stepsPerday$TotalSteps)
+```
 
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
 
 We first aggregate for the average (interpreted as mean) over the 5 minute intervals across days.
 
-```{r mean over intervals }
 
+```r
 AverageStepsByInterval = aggregate(data$steps, by = list(data$interval), FUN = mean, na.rm = TRUE)
-
 ```
 
 Now we plot a time series (type = 'l') of the average number of steps of each interval across days.
 
-```{r time series over 5 minutes intervals}
 
+```r
 plot(AverageStepsByInterval[[1]], AverageStepsByInterval[[2]], type="l", ylab = "Average Number of Steps", xlab = "Interval", main = "Average Number of Steps for each Interval across days")
 ```
 
+<img src="PA1_template_files/figure-html/time series over 5 minutes intervals-1.png" style="display: block; margin: auto;" />
+
 And finally we look for the 5 minute interval that has the maxmimum average number of steps across days. In order to do that, we sort the dataframe containing the Average steps of intervals across days and return the interval in the first row.
 
-```{r max average of interval across days}
 
+```r
 ##Sort by highest average across days
 SortedAverageStepsByInterval <- AverageStepsByInterval[order(AverageStepsByInterval[[2]]),]
 
@@ -91,16 +96,20 @@ SortedAverageStepsByInterval <- AverageStepsByInterval[order(AverageStepsByInter
 SortedAverageStepsByInterval[1,1]
 ```
 
-The interval with maximum average number of steps across days is interval `r AverageStepsByInterval[1,1]`.
+```
+## [1] 40
+```
+
+The interval with maximum average number of steps across days is interval 0.
 
 ## Imputing missing values
 
-There is a total of `r sum(apply(data, 1, function(x) sum(is.na(x))))` NAs in the dataset.
+There is a total of 2304 NAs in the dataset.
 
 We are going to fill in all the missing values (NAs) of the original dataset by substituting each missing value with the average for that interval across days.
 
-```{r replace NAs}
 
+```r
 ## We'll go through each row of the table and if NA, replace it with the average for that interval across days
 
 dataWithNoNa <- data;
@@ -110,12 +119,11 @@ for (i in 1:nrow(dataWithNoNa)){
                 dataWithNoNa[i,1] <- AverageStepsByInterval[which(AverageStepsByInterval[[1]] == dataWithNoNa[i,3]),2]
         }
 }
-
 ```
 We produce a histogram with our new data set with the NAs replaced - 
 
-```{r histogram no NA}
 
+```r
 #aggregating over dates
 newStepsPerDay <- aggregate(dataWithNoNa$steps, by = list(Date = dataWithNoNa$date), FUN = sum)
 
@@ -123,21 +131,28 @@ newStepsPerDay <- aggregate(dataWithNoNa$steps, by = list(Date = dataWithNoNa$da
 names(newStepsPerDay)[2] <- "TotalSteps"
 
 hist(newStepsPerDay$TotalSteps, main = "Histogram of Total Number of Steps per day after replacing NAs", xlab = "Number of Steps per Day", ylab = "Frequency", ylim = c(0,35))
-
 ```
+
+<img src="PA1_template_files/figure-html/histogram no NA-1.png" style="display: block; margin: auto;" />
 
 And re-calculate the mean and median of the new data set - 
 
-```{r mean steps per day without NAs}
 
+```r
 mean(newStepsPerDay$TotalSteps)
-
 ```
 
-```{r median steps per day without NAs}
+```
+## [1] 10766.19
+```
 
+
+```r
 median(newStepsPerDay$TotalSteps)
+```
 
+```
+## [1] 10766.19
 ```
 
 After replacing the data points that were missing with the average across days for the intervals, we see from the histogram that many intervals that had a low number of steps now have closer to the average number of steps. That is further reinforced by the fact that the median and mean are now the same, a difference from the original data set that had the mean be lower than the median. The new data set is more centered around the median and less heavy on intervals with low number of steps.
@@ -146,26 +161,24 @@ After replacing the data points that were missing with the average across days f
 
 In order to compare weekdays and weekends, we first need to create a new factor variable determing whether the date is a weekday or weekend.
 
-```{r weekday and weekend determination}
 
+```r
 dataWithNoNa$dayType <- ifelse (weekdays(as.Date(dataWithNoNa$date)) == "Saturday" | weekdays(as.Date(dataWithNoNa$date)) == "Sunday" ,"Weekend", "Weekday")
-
 ```
 
 We now aggregate to find the average of intervals across weekdays and weekends respectively -
 
-```{r aggregate over weekend and weekdays}
 
+```r
 averageAcrossWeekdays = aggregate(dataWithNoNa$steps[dataWithNoNa$dayType == "Weekday"], by = list(dataWithNoNa$interval[dataWithNoNa$dayType == "Weekday"]), FUN = mean)
 
 averageAcrossWeekends = aggregate(dataWithNoNa$steps[dataWithNoNa$dayType == "Weekend"], by = list(dataWithNoNa$interval[dataWithNoNa$dayType == "Weekend"]), FUN = mean)
-
 ```
 
 Finally, we plot the averages across weekend and weekday in the plot below.
 
-```{r plot weekdays vs weekends}
 
+```r
 #Set up plots so two are combined in one.
 par(mfrow=c(2,1))
 
@@ -174,6 +187,6 @@ plot(averageAcrossWeekends[[1]], averageAcrossWeekends[[2]], type="l", ylab = "N
 
 #Plot for Weekdays
 plot(averageAcrossWeekdays[[1]], averageAcrossWeekdays[[2]], type="l", ylab = "Number of Steps", xlab = "Interval", col="blue", main = "Weekdays")
-
-
 ```
+
+<img src="PA1_template_files/figure-html/plot weekdays vs weekends-1.png" style="display: block; margin: auto;" />
