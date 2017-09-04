@@ -100,7 +100,7 @@ SortedAverageStepsByInterval[1,1]
 ## [1] 40
 ```
 
-The interval with maximum average number of steps across days is interval 0.
+The interval with maximum average number of steps across days is interval 40.
 
 ## Imputing missing values
 
@@ -164,29 +164,23 @@ In order to compare weekdays and weekends, we first need to create a new factor 
 
 ```r
 dataWithNoNa$dayType <- ifelse (weekdays(as.Date(dataWithNoNa$date)) == "Saturday" | weekdays(as.Date(dataWithNoNa$date)) == "Sunday" ,"Weekend", "Weekday")
+
+dataWithNoNa$dayType <- as.factor(dataWithNoNa$dayType)
 ```
 
-We now aggregate to find the average of intervals across weekdays and weekends respectively -
+We now aggregate to find the average of intervals across weekdays and weekends  -
 
 
 ```r
-averageAcrossWeekdays = aggregate(dataWithNoNa$steps[dataWithNoNa$dayType == "Weekday"], by = list(dataWithNoNa$interval[dataWithNoNa$dayType == "Weekday"]), FUN = mean)
-
-averageAcrossWeekends = aggregate(dataWithNoNa$steps[dataWithNoNa$dayType == "Weekend"], by = list(dataWithNoNa$interval[dataWithNoNa$dayType == "Weekend"]), FUN = mean)
+averagesWithDayType = aggregate(dataWithNoNa$steps, by =  list(interval = dataWithNoNa$interval, dayType = dataWithNoNa$dayType), FUN = mean)
 ```
 
 Finally, we plot the averages across weekend and weekday in the plot below.
 
 
 ```r
-#Set up plots so two are combined in one.
-par(mfrow=c(2,1))
-
-#Plot for Weekends
-plot(averageAcrossWeekends[[1]], averageAcrossWeekends[[2]], type="l", ylab = "Number of Steps", xlab = "Interval", col="blue", main="Weekends")
-
-#Plot for Weekdays
-plot(averageAcrossWeekdays[[1]], averageAcrossWeekdays[[2]], type="l", ylab = "Number of Steps", xlab = "Interval", col="blue", main = "Weekdays")
+library(lattice)
+xyplot(averagesWithDayType$x~ averagesWithDayType$interval | averagesWithDayType$dayType, type="l", layout=c(1,2), xlab = "Interval", ylab = "Number of Steps")
 ```
 
 <img src="PA1_template_files/figure-html/plot weekdays vs weekends-1.png" style="display: block; margin: auto;" />
